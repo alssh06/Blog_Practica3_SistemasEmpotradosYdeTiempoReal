@@ -2,9 +2,13 @@
 **Sistemas Empotrados y de Tiempo Real** · Autor: Alejandro López Sánchez
 
 ### Montaje
-Fotos del circuito:
+Foto del montaje:
 
+<img width="3000" height="4000" alt="20261122_113431" src="https://github.com/user-attachments/assets/ef8b3fb6-2e3f-46fa-b646-93de9c12d8f3" />
 
+Fritzing del montaje:
+
+<img width="831" height="377" alt="Captura desde 2026-11-22 12-04-55" src="https://github.com/user-attachments/assets/30a3499b-b532-4e79-a96b-db8b442efe58" />
 
 ### Componenetes
 
@@ -50,15 +54,15 @@ El menú tiene 4 opciones, que se recorren con el joystick y se validan con su p
 Al editar un precio se trabaja con una **copia temporal**: solo al confirmar se escribe en el catálogo. Los cambios se ven después en el modo SERVICIO y se guardan en RAM.
 
 ### Recursos utilizados y por qué
-**Threads (ArduinoThread)**: tres tareas periódicas gestionadas por un `ThreadController`.
+**Threads (ArduinoThread)**: Usamos threads para gestionar los intervalos de tiempo de 3 tareas esporadicas a traves del `ThreadController`: 
 
 | Thread | Intervalo | Por qué ese valor |
 |---|---|---|
 | Distancia | 200 ms | Tiempo mas que suficiente para que pueda calcular la distancia |
-| DHT11 | 1500 ms | El DHT11 admite como máximo 1 lectura por segundo |
+| DHT11 | 1500 ms | El DHT11 admite como máximo 1 lectura por segundo, con este tiempo aseguramos un funcionamiento optimo |
 | Estado | 50 ms | Para tener respuestas rápidas a las pulsaciones de los botones y realizar acorde los cambios de estado |
 
-**Interrupción hardware**: el botón externo está en el **pin 2 (INT0)** y se captura con `attachInterrupt(..., CHANGE)`. La ISR es muy corta: aplica un antirrebote de 30 ms y guarda el instante de pulsar y de soltar para calcular la duración, que es lo que distingue cancelar (2 a 3 s) de Admin (5 s o más). Las variables compartidas con la ISR son `volatile` y se leen entre `noInterrupts()` e `interrupts()`.
+**Interrupción hardware**: el botón externo está en el **pin 2** y se captura con `attachInterrupt(..., CHANGE)`. La ISR es muy corta: aplica un antirrebote de 30 ms y guarda el instante de pulsar y de soltar para calcular la duración, que es lo que distingue cancelar (2 a 3 s) de Admin (5 s o más). Las variables compartidas con la ISR son `volatile` y se leen entre `noInterrupts()` e `interrupts()`.
 
 **TimerOne**: `Timer1` genera una interrupción exacta cada segundo e incrementa el contador de "Ver contador".
 
@@ -67,7 +71,7 @@ Al editar un precio se trabaja con una **copia temporal**: solo al confirmar se 
 **PWM**: el LED2 usa el pin 11 con `analogWrite`. El brillo es proporcional al progreso con `map(elapsed, 0, duración, 0, 255)`.
 
 **Sensores**:
-- **HC-SR04**: distancia = `duración × 0,0343 / 2` (cm). Se divide entre 2 porque el pulso va y vuelve, y le damos un Timeout de 30 ms para no bloquear el programa.
+- **HC-SR04**: Donde se calucula la  distancia como distancia = `duración × 0,0343 / 2` (cm). Se divide entre 2 porque el pulso va y vuelve, y le damos un Timeout de 30 ms para no bloquear el programa.
 - **DHT11**: si una lectura falla se conserva la última buena; mientras no haya ninguna correcta, el LCD muestra `--`.
 
 ### Decisiones de diseño
@@ -84,5 +88,5 @@ Al editar un precio se trabaja con una **copia temporal**: solo al confirmar se 
 - **StateMachine.hpp**: modos Arranque, Servicio y Admin, y contador con Timer1.
 - **Threads.hpp**: tareas periódicas con ArduinoThread.
 
-Librerías necesarias: LiquidCrystal, ArduinoThread (incluye `ThreadController`), DHT sensor library (Adafruit) con Adafruit Unified Sensor, y TimerOne.
+Librerías necesarias: LiquidCrystal, ArduinoThread, DHT sensor library (Adafruit) con Adafruit Unified Sensor, y TimerOne.
 
